@@ -6,6 +6,8 @@ import re
 from setuptools import find_packages
 from setuptools import setup
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 def get_version(filename):
     content = open(filename).read()
@@ -19,7 +21,8 @@ setup(
     license='Apache License, Version 2.0',
     author='Alexandre Blanchard',
     description='Control your mopidy instance from slack',
-    long_description=open('README.rst').read(),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     zip_safe=False,
     include_package_data=True,
