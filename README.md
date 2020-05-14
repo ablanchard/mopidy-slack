@@ -17,30 +17,32 @@ To work you need to [create a Slack App](https://api.slack.com/apps) and install
 This way you get the bot user OAuth access token, useful later
 ![](docs/bot_token.png)
 
-Then you need to activate the events API. This APi requires the URL on which your mopidy instance is callable. If you are testing it on local you can use [ngork](https://ngrok.com/>) to expose your instance on the web.
+Then you need to activate the events API. This API requires the URL on which your mopidy instance is callable. If you are testing it on local you can use [ngork](https://ngrok.com/>) to expose your instance on the web. After you domain, add the endpoint `/slack/events`.
+
+You also need to subcribe the app to the event `message.channels`. This way the app will receive all messages posted in channel where its had been added. Beware not to post confidential data :warning:
 ![](docs/events.png)
 
 ### Mopidy 
 
-In mopidy configuration, you must add your Slack app's Bot User OAuth Access Token and signing_secret.
-Signing secret is found there:
-![](docs/signing_secret.png)
+In mopidy configuration, you must add your Slack app's Bot User OAuth Access Token using `bot_token`
 
 
-In Mopidy configuration file:
-
+Complete configuration:
 ```
 [slack]
 bot_token=xoxb-123456789123-1234567891234-xxx
-signing_secret=xxxxXXXXxxxxXXXXxxxxXXXXxxxxXXXX
-default_playlist_uri=spotify:playlist:2TYKzbVRYsyaVsPrnn2AnY
-backend_priority=local,spotify
 ```
 
-## Bot commands
+## Extension commands
 
+All available commands are available in the folder `command`. Currently there is :
+ - `help` Display the help
+ - `keep` Ask to keep the current playing song
+ - `next` Ask to skip the current playing song
+ - `request song_name [- artist_name]` Request a new song to be played
+ - `start [playlist_name]` Start the radio broadcast. The bot will look for playlist starting with given name of fallback to the default playlist
 
-
+Note that there is no `/` before the command, this way we are not using the slack app commands. If we used this mecanism, the configuration of app would be long and difficult to maintain.
 
 ## Project resources
 

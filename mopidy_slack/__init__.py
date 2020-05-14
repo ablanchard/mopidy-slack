@@ -3,39 +3,27 @@ from __future__ import unicode_literals
 import logging
 import os
 
-from .reporters import events
-from . import help
-from . import request
-from . import next
-from . import keep
-from . import start
-from . import connector
+from .song_notification import SongNotification
+from .command import help, request, next, keep, start
+from .connector import SlackConnector
 
 import tornado.web
 from mopidy import config, ext
 import json
+import time
 
 __version__ = '0.1.0'
 logger = logging.getLogger(__name__)
 
 class EventsHandler(tornado.web.RequestHandler):
-    def initialize(self, core, config, slack_connector, next_counter):
+    def initialize(self, core, slack_connector, listeners):
         self.core = core
-        self.config = config
         self.slack_connector = slack_connector
-        self.next_counter = next_counter
-        self.listeners = []
-        self.listeners.append(request.RequestListener(self.core, self.config["slack"]))
-        self.listeners.append(next.NextListener(self.core,self.next_counter))
-        self.listeners.append(keep.KeepListener(self.core,self.next_counter))
-        self.listeners.append(start.StartListener(self.core, self.config["slack"]))
-        # list listeners usages
-        self.listeners.append(help.HelpListener(self.listeners))
+        self.listeners = listeners
 
     def post(self):
         data = json.loads(self.request.body.decode('utf-8'))
         callType = data['type']
-
         if callType == "url_verification":
             self.verify_url(data)
         
@@ -46,10 +34,11 @@ class EventsHandler(tornado.web.RequestHandler):
 
     def apply_message(self, event):
         text = event["text"]
-        logger.debug("got message: " + text)
+        logger.debug("[SlackHandler] got message: {} from {} on chan {}".format(text, event["user"], event["channel"]))
         for listener in self.listeners:
             if text.startswith(listener.command()):
-                self.slack_connector.send_message(listener.action(text, event["user"]), event["channel"])
+                message_back = listener.action(text, event["user"], event["channel"])
+                self.slack_connector.send_message(message_back, event["channel"])
         self.set_header("Content-type","application/json")
         self.write({ 'status' : 'ok' })
 
@@ -72,17 +61,21 @@ class Extension(ext.Extension):
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
         schema['bot_token'] = config.String()
-        schema['signing_secret'] = config.String()
-        schema['default_playlist_uri'] = config.String()
-        schema['backend_priority'] = config.String()
         return schema
     
     def factory(self, config, core):
-        self.slack_connector = connector.SlackConnector(config)
-        self.next_counter = next.NextCounter()
-        self.event_reporter = events.EventReporter.start(self.slack_connector, self.next_counter)
+        next_counter = next.NextCounter()
+        channel_holder = ChannelHolder()
+        self.song_notification = SongNotification.start(SlackConnector(config, False), next_counter, channel_holder)
+        self.listeners = []
+        self.listeners.append(start.StartListener(core, channel_holder))
+        self.listeners.append(request.RequestListener(core))
+        self.listeners.append(next.NextListener(core, next_counter))
+        self.listeners.append(keep.KeepListener(core, next_counter))
+        # list listeners usages
+        self.listeners.append(help.HelpListener(self.listeners))
         return [
-            ('/events', EventsHandler, {"core": core, "config": config, "slack_connector": self.slack_connector, "next_counter": self.next_counter})
+            ('/events', EventsHandler, {"core": core, "slack_connector": SlackConnector(config, True), "listeners": self.listeners})
         ]
 
     def setup(self, registry):
@@ -90,4 +83,16 @@ class Extension(ext.Extension):
             'name': self.ext_name,
             'factory': self.factory
         })
+
+class ChannelHolder():
+
+    def __init__(self):
+        self.channel = ""
+
+    def set_channel(self, channel):
+        self.channel = channel
+
+    def get_channel(self):
+        return self.channel
+
 

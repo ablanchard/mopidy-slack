@@ -1,7 +1,6 @@
 from threading import Timer
 from . import listener
 
-
 class NextListener(listener.CommandListener):
 
     def __init__(self,core,counter):
@@ -11,7 +10,7 @@ class NextListener(listener.CommandListener):
     def command(self):
         return 'next'
 
-    def action(self, msg, user):
+    def action(self, msg, user, channel):
         if len(self.counter.nexts) == 0:
             Timer(15.0,self.change_song).start()
             self.counter.add_next(user)

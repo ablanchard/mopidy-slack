@@ -8,7 +8,7 @@ class HelpListener(listener.CommandListener):
     def command(self):
         return 'help'
 
-    def action(self, msg, user):
+    def action(self, msg, user, channel):
         usage =''
         for listener in self.listeners:
             usage += listener.usage() + '\n'

@@ -9,7 +9,7 @@ class KeepListener(listener.CommandListener):
     def command(self):
         return 'keep'
 
-    def action(self, msg, user):
+    def action(self, msg, user, channel):
         self.counter.add_keep(user)
         return 'Currently {} nexts and {} keeps'.format(len(self.counter.nexts),len(self.counter.keeps))
 
