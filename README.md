@@ -26,8 +26,7 @@ You also need to subcribe the app to the event `message.channels`. This way the 
 
 In mopidy configuration, you must add your Slack app's Bot User OAuth Access Token using `bot_token`
 
-
-Complete configuration:
+So configuration is:
 ```
 [slack]
 bot_token=xoxb-123456789123-1234567891234-xxx
@@ -46,14 +45,9 @@ Note that there is no `/` before the command, this way we are not using the slac
 
 ## Project resources
 
-
 - [Blog article](https://ablanchard.me)
-
 
 ## Changelog
 
-
-v0.1.0 (2020-05-13)
--------------------
-
-- Initial release.
+### v0.1.0 (2020-05-13)
+ - Initial release.
