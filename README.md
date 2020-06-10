@@ -5,6 +5,8 @@
 
 Requires you to create a slack app in your workspace.
 
+![](docs/start.gif)
+
 ## Installation
 
 Install by running: `pip install Mopidy-Slack`
@@ -34,6 +36,8 @@ bot_token=xoxb-123456789123-1234567891234-xxx
 
 ## Extension commands
 
+![](docs/request.gif)
+
 All available commands are available in the folder `command`. Currently there is :
  - `help` Display the help
  - `keep` Ask to keep the current playing song
@@ -46,6 +50,14 @@ Note that there is no `/` before the command, this way we are not using the slac
 ## Project resources
 
 - [Blog article](https://ablanchard.me)
+
+## More gifs
+
+![](docs/next.gif)
+
+![](docs/keep.gif)
+
+![](docs/request-with-artist.gif)
 
 ## Changelog
 
